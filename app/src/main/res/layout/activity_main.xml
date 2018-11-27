@@ -6,50 +6,64 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity">
 
-    <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <TableLayout
-                android:id="@+id/tableLayout"
-                android:layout_width="match_parent"
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent" android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:id="@+id/linearLayout"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
-            <TableRow
-                    android:id="@+id/tableRow0"
-                    android:layout_width="match_parent" android:layout_height="match_parent">
-                <TextView
-                        android:text="@string/account"
-                        android:textStyle="bold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+            <Button
+                    android:enabled="false"
+                    android:text="@string/account"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-                <Button
-                        android:id="@+id/btnAddData"
-                        android:enabled="false"
-                        android:text="@string/add"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-            </TableRow>
+            <Button
+                    android:enabled="false"
+                    android:text="@string/total"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
 
-            <TableRow
-                    android:id="@+id/tableRow1"
-                    android:layout_width="match_parent" android:layout_height="match_parent">
-                <TextView
-                        android:text="@string/total"
-                        android:textStyle="bold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-            </TableRow>
+            <Button
+                    android:id="@+id/btnAddAccount"
+                    android:text="@string/add"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TableLayout
+                    android:id="@+id/tableLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-            <TableRow
-                    android:id="@+id/tableRow2"
-                    android:layout_width="match_parent" android:layout_height="match_parent">
-                <Button
-                        android:id="@+id/btnAddAccount"
-                        android:text="@string/add"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
-            </TableRow>
-        </TableLayout>
-    </HorizontalScrollView>
+                <TableRow
+                        android:id="@+id/tableRow0"
+                        android:layout_width="match_parent" android:layout_height="match_parent">
+
+
+                    <Button
+                            android:id="@+id/btnAddData"
+                            android:enabled="false"
+                            android:text="@string/add"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                </TableRow>
+
+                <TableRow
+                        android:id="@+id/tableRow1"
+                        android:layout_width="match_parent" android:layout_height="match_parent" />
+
+            </TableLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+
 </ScrollView>
