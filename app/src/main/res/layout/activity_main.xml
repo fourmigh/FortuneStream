@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <TableLayout
+                android:id="@+id/tableLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <TableRow
+                    android:id="@+id/tableRow0"
+                    android:layout_width="match_parent" android:layout_height="match_parent">
+                <TextView
+                        android:text="@string/account"
+                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                <Button
+                        android:id="@+id/btnAddData"
+                        android:enabled="false"
+                        android:text="@string/add"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+            </TableRow>
+
+            <TableRow
+                    android:id="@+id/tableRow1"
+                    android:layout_width="match_parent" android:layout_height="match_parent">
+                <TextView
+                        android:text="@string/total"
+                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+            </TableRow>
+
+            <TableRow
+                    android:id="@+id/tableRow2"
+                    android:layout_width="match_parent" android:layout_height="match_parent">
+                <Button
+                        android:id="@+id/btnAddAccount"
+                        android:text="@string/add"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+            </TableRow>
+        </TableLayout>
+    </HorizontalScrollView>
+</ScrollView>

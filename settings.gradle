@@ -1,0 +1,7 @@
+include ':app'
+
+include ':UtilsLibrary'
+project(':UtilsLibrary').projectDir = new File(settingsDir, '../CaojunLibrary/UtilsLibrary')
+
+include ':AdapterLibrary'
+project(':AdapterLibrary').projectDir = new File(settingsDir, '../CaojunLibrary/AdapterLibrary')
