@@ -71,6 +71,8 @@ class MainActivity : AppCompatActivity() {
         if (!isReadData) {
             tvAccount.requestFocus()
         }
+
+        checkBtnAddAccount()
     }
     
     private fun doAddDate() {
@@ -249,6 +251,17 @@ class MainActivity : AppCompatActivity() {
         return -1
     }
 
+    private fun checkBtnAddAccount() {
+        for (i in 2 until linearLayout.childCount - 1) {
+            val tvAccount = linearLayout.getChildAt(i)
+            if (tvAccount is TextView && TextUtils.isEmpty(tvAccount.text.toString())) {
+                btnAddAccount.isEnabled = false
+                return
+            }
+        }
+        btnAddAccount.isEnabled = true
+    }
+
     private fun checkBtnAddData() {
         if (isReadData) {
             btnAddData.isEnabled = true
@@ -391,6 +404,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                checkBtnAddAccount()
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+        })
         return editText
     }
 
