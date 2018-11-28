@@ -52,8 +52,9 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun doAddAccount() {
+        val tvAccount = newAccountTextView()
         linearLayout.removeView(btnAddAccount)
-        linearLayout.addView(newAccountTextView())
+        linearLayout.addView(tvAccount)
         linearLayout.addView(btnAddAccount)
 
         val tableRow = TableRow(this@MainActivity)
@@ -63,6 +64,8 @@ class MainActivity : AppCompatActivity() {
         checkBtnAddData()
 
         addEditText()
+
+        tvAccount.requestFocus()
     }
     
     private fun doAddDate() {
@@ -118,16 +121,19 @@ class MainActivity : AppCompatActivity() {
             if (column < 1) {
                 return@doAsync
             }
+            val alAccount = ArrayList<String>()
             for (i in 0 until row) {
                 val indexRow = i + 2
                 val tvAccount = linearLayout.getChildAt(indexRow)
                 if (tvAccount is TextView) {
                     val nameAccount = tvAccount.text.toString()
-                    if (TextUtils.isEmpty(nameAccount)) {
+                    if (TextUtils.isEmpty(nameAccount) || nameAccount in alAccount) {
                         continue
                     }
                     val account = Account(nameAccount)
                     FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().insert(account)
+
+                    alAccount.add(nameAccount)
 
                     for (j in 0 until column) {
                         val tvDate = tableRows[0].getChildAt(j)
@@ -137,7 +143,9 @@ class MainActivity : AppCompatActivity() {
 
                             val etFortune = tableRows[indexRow].getChildAt(j)
                             if (etFortune is EditText) {
-                                val fortune = Fortune(account.account, date.date, etFortune.text.toString().toDouble())
+                                val text = etFortune.text.toString()
+                                val value = if (TextUtils.isEmpty(text)) 0.toDouble() else text.toDouble()
+                                val fortune = Fortune(account.account, date.date, value)
                                 FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().insert(fortune)
                             }
                         }
