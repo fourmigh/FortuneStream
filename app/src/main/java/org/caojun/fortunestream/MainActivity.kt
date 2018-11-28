@@ -19,6 +19,7 @@ import org.caojun.utils.CashierInputFilter
 import org.caojun.utils.DigitUtils
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 
 
@@ -304,7 +305,21 @@ class MainActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             }
         })
+
+        editText.setOnLongClickListener {
+            //显示比前一天增加或减少金额
+            val lastValue = getLastAmount(editText, column - 1, row)
+            val value = getValue(editText)
+            showDifferenceValue(value, lastValue)
+            true
+        }
         return editText
+    }
+
+    private fun showDifferenceValue(value: Double, lastValue: Double) {
+        val sign = if (value >= lastValue) "+" else "-"
+        val absolute = DigitUtils.getRound(Math.abs(value - lastValue), 2)
+        toast("$sign $absolute")
     }
 
     private fun checkTotaleButtonColor(button: Button, column: Int) {
@@ -367,6 +382,13 @@ class MainActivity : AppCompatActivity() {
         //总计
         button.setOnClickListener {
             doDeleteColumn(column)
+        }
+        button.setOnLongClickListener {
+            //显示比前一天增加或减少金额
+            val lastValue = getLastTotal(button, column - 1)
+            val value = getValue(button)
+            showDifferenceValue(value, lastValue)
+            true
         }
         return button
     }
