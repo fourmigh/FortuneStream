@@ -53,9 +53,7 @@ class MainActivity : AppCompatActivity() {
     
     private fun doAddAccount() {
         val tvAccount = newAccountTextView()
-        linearLayout.removeView(btnAddAccount)
-        linearLayout.addView(tvAccount)
-        linearLayout.addView(btnAddAccount)
+        linearLayout.addView(tvAccount, linearLayout.childCount - 1)
 
         val tableRow = TableRow(this@MainActivity)
         tableLayout.addView(tableRow)
@@ -71,15 +69,11 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun doAddDate() {
-        tableRows[0].removeView(btnAddData)
-
-        val column = tableRows[0].childCount
+        val column = tableRows[0].childCount - 1
 
         val tvDate = newDateTextText()
         tvDate.text = TimeUtils.getTime("yyyy-MM-dd")
-        tableRows[0].addView(tvDate)
-
-        tableRows[0].addView(btnAddData)
+        tableRows[0].addView(tvDate, column)
 
         tableRows[1].addView(newTotalButton(column))
 
