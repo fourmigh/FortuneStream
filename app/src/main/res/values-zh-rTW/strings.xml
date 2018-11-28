@@ -5,4 +5,5 @@
     <string name="account">帳戶</string>
     <string name="total">總計</string>
     <string name="save">保存</string>
+    <string name="alert_delete_date">確定要删除%s的數據嗎？</string>
 </resources>

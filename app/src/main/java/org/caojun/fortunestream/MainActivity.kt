@@ -5,8 +5,6 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.*
 import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TableRow
@@ -19,7 +17,7 @@ import org.caojun.fortunestream.room.FortuneDatabase
 import org.caojun.utils.TimeUtils
 import org.caojun.utils.CashierInputFilter
 import org.caojun.utils.DigitUtils
-import org.caojun.utils.FormatUtils
+import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -30,6 +28,9 @@ class MainActivity : AppCompatActivity() {
     private val tableRows = arrayListOf<TableRow>()
     private val hmRow = HashMap<String, Int>()
     private val hmColumn = HashMap<String, Int>()
+    private val accounts = ArrayList<Account>()
+    private val dates= ArrayList<Date>()
+    private val fortunes = ArrayList<Fortune>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,9 +138,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun doRead() {
         doAsync {
-            val accounts = FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().queryAll()
-            val dates = FortuneDatabase.getDatabase(this@MainActivity).getDateDao().queryAll()
-            val fortunes = FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().queryAll()
+            accounts.clear()
+            dates.clear()
+            fortunes.clear()
+
+            accounts.addAll(FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().queryAll())
+            dates.addAll(FortuneDatabase.getDatabase(this@MainActivity).getDateDao().queryAll())
+            fortunes.addAll(FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().queryAll())
+
             uiThread {
                 isReadData = true
                 hmRow.clear()
@@ -266,10 +272,10 @@ class MainActivity : AppCompatActivity() {
                 if (!TextUtils.isEmpty(s)) {
                     total += s.toString().toDouble()
                 }
-                val textView = tableRows[1].getChildAt(column)
-                if (textView is TextView) {
-//                    textView.text = DigitUtils.getRound(total, 2)
-                    textView.text = FormatUtils.amount(total)
+                val button = tableRows[1].getChildAt(column)
+                if (button is Button) {
+                    button.text = DigitUtils.getRound(total, 2)
+                    checkTotaleButtonColor(button, column)
                 }
 
                 val lastValue = getLastAmount(editText, column - 1, row)
@@ -291,6 +297,17 @@ class MainActivity : AppCompatActivity() {
         return editText
     }
 
+    private fun checkTotaleButtonColor(button: Button, column: Int) {
+        val lastValue = getLastTotal(button, column - 1)
+        val value = getValue(button)
+
+        when {
+            value > lastValue -> button.setTextColor(Color.RED)
+            value < lastValue -> button.setTextColor(Color.GREEN)
+            else -> button.setTextColor(Color.BLACK)
+        }
+    }
+
     private fun getAccountEditText(): EditText {
         val editText = EditText(this)
         editText.maxLines = 1
@@ -308,20 +325,52 @@ class MainActivity : AppCompatActivity() {
         val button = Button(this)
         //总计
         button.setOnClickListener {
-            var total = 0.0
-            for (i in 2 until tableRows.size) {
-                val editText = tableRows[i].getChildAt(column)
-                if (editText is EditText) {
-                    val value = editText.text.toString()
-                    if (TextUtils.isEmpty(value)) {
-                        continue
-                    }
-                    total += value.toDouble()
-                }
-            }
-            button.text = DigitUtils.getRound(total, 2)
+            doDeleteColumn(column)
         }
         return button
+    }
+
+    private fun doDeleteColumn(column: Int) {
+        alert {
+            title = getString(R.string.alert_delete_date, dates[column].date)
+            positiveButton(android.R.string.ok) {
+                deleteColumn(column)
+            }
+            negativeButton(android.R.string.cancel) {}
+        }.show()
+    }
+
+    private fun deleteColumn(column: Int) {
+        doAsync {
+            FortuneDatabase.getDatabase(this@MainActivity).getDateDao().delete(dates[column])
+            for (i in fortunes.indices) {
+                if (fortunes[i].date == dates[column].date) {
+                    FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().delete(fortunes[i])
+                }
+            }
+            uiThread {
+                for (i in tableRows.indices) {
+                    tableRows[i].removeViewAt(column)
+                }
+            }
+        }
+    }
+
+    private fun getLastBtnTotal(column: Int): Button? {
+        if (column < 0) {
+            return null
+        }
+        val button = tableRows[1].getChildAt(column)
+        if (button is Button) {
+            return button
+        }
+        return null
+    }
+
+    private fun getLastTotal(button: Button, column: Int): Double {
+        val value = getValue(button)
+        val lastEditText = getLastBtnTotal(column)
+        return if (lastEditText == null) value else getValue(lastEditText)
     }
 
     private fun getLastAmountEditText(column: Int, row: Int): EditText? {
@@ -341,8 +390,8 @@ class MainActivity : AppCompatActivity() {
         return if (lastEditText == null) value else getValue(lastEditText)
     }
 
-    private fun getValue(editText: EditText): Double {
-        val value = editText.text.toString()
+    private fun getValue(textView: TextView): Double {
+        val value = textView.text.toString()
         if (TextUtils.isEmpty(value)) {
             return 0.toDouble()
         }
