@@ -65,7 +65,9 @@ class MainActivity : AppCompatActivity() {
 
         addEditText()
 
-        tvAccount.requestFocus()
+        if (!isReadData) {
+            tvAccount.requestFocus()
+        }
     }
     
     private fun doAddDate() {
