@@ -118,6 +118,7 @@ class MainActivity : AppCompatActivity() {
                 return@doAsync
             }
             val alAccount = ArrayList<String>()
+            val alDate = ArrayList<String>()
             for (i in 0 until row) {
                 val indexRow = i + 2
                 val tvAccount = linearLayout.getChildAt(indexRow)
@@ -128,14 +129,17 @@ class MainActivity : AppCompatActivity() {
                     }
                     val account = Account(nameAccount)
                     FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().insert(account)
-
                     alAccount.add(nameAccount)
 
                     for (j in 0 until column) {
                         val tvDate = tableRows[0].getChildAt(j)
                         if (tvDate is TextView) {
                             val date = Date(tvDate.text.toString())
+                            if (date.date in alDate) {
+                                continue
+                            }
                             FortuneDatabase.getDatabase(this@MainActivity).getDateDao().insert(date)
+                            alDate.add(date.date)
 
                             val etFortune = tableRows[indexRow].getChildAt(j)
                             if (etFortune is EditText) {
