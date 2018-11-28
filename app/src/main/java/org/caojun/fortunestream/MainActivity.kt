@@ -1,5 +1,6 @@
 package org.caojun.fortunestream
 
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.*
@@ -18,6 +19,7 @@ import org.caojun.fortunestream.room.FortuneDatabase
 import org.caojun.utils.TimeUtils
 import org.caojun.utils.CashierInputFilter
 import org.caojun.utils.DigitUtils
+import org.caojun.utils.FormatUtils
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -234,12 +236,12 @@ class MainActivity : AppCompatActivity() {
             val childCount = tableRows[i].childCount
             val column = nColumn - childCount
             for (j in 0 until column) {
-                tableRows[i].addView(getAmountEditText(tableRows[i].childCount))
+                tableRows[i].addView(getAmountEditText(tableRows[i].childCount, i))
             }
         }
     }
 
-    private fun getAmountEditText(column: Int): EditText {
+    private fun getAmountEditText(column: Int, row: Int): EditText {
         val editText = EditText(this)
         editText.maxLines = 1
         editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
@@ -266,7 +268,17 @@ class MainActivity : AppCompatActivity() {
                 }
                 val textView = tableRows[1].getChildAt(column)
                 if (textView is TextView) {
-                    textView.text = DigitUtils.getRound(total, 2)
+//                    textView.text = DigitUtils.getRound(total, 2)
+                    textView.text = FormatUtils.amount(total)
+                }
+
+                val lastValue = getLastAmount(editText, column - 1, row)
+                val value = getValue(editText)
+
+                when {
+                    value > lastValue -> editText.setTextColor(Color.RED)
+                    value < lastValue -> editText.setTextColor(Color.GREEN)
+                    else -> editText.setTextColor(Color.BLACK)
                 }
             }
 
@@ -310,5 +322,30 @@ class MainActivity : AppCompatActivity() {
             button.text = DigitUtils.getRound(total, 2)
         }
         return button
+    }
+
+    private fun getLastAmountEditText(column: Int, row: Int): EditText? {
+        if (column < 0) {
+            return null
+        }
+        val editText = tableRows[row].getChildAt(column)
+        if (editText is EditText) {
+            return editText
+        }
+        return null
+    }
+
+    private fun getLastAmount(editText: EditText, column: Int, row: Int): Double {
+        val value = getValue(editText)
+        val lastEditText = getLastAmountEditText(column, row)
+        return if (lastEditText == null) value else getValue(lastEditText)
+    }
+
+    private fun getValue(editText: EditText): Double {
+        val value = editText.text.toString()
+        if (TextUtils.isEmpty(value)) {
+            return 0.toDouble()
+        }
+        return value.toDouble()
     }
 }
