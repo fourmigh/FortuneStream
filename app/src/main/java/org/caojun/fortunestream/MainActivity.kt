@@ -425,16 +425,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun newTotalButton(column: Int): Button {
         val button = Button(this)
-        //总计
-        button.setOnClickListener {
-            doDeleteColumn(column)
-        }
         button.setOnLongClickListener {
+            doDeleteColumn(column)
+            true
+        }
+        button.setOnClickListener {
             //显示比前一天增加或减少金额
             val lastValue = getLastTotal(button, column - 1)
             val value = getValue(button)
             showDifferenceValue(value, lastValue)
-            true
         }
         return button
     }
