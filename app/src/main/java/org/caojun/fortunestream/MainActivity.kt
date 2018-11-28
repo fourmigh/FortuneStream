@@ -269,34 +269,7 @@ class MainActivity : AppCompatActivity() {
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 //实时计算总计
-                var total = 0.0
-                for (i in 2 until tableRows.size) {
-                    val et = tableRows[i].getChildAt(column)
-                    if (et is EditText && et != editText) {
-                        val value = et.text.toString()
-                        if (TextUtils.isEmpty(value)) {
-                            continue
-                        }
-                        total += value.toDouble()
-                    }
-                }
-                if (!TextUtils.isEmpty(s)) {
-                    total += s.toString().toDouble()
-                }
-                val button = tableRows[1].getChildAt(column)
-                if (button is Button) {
-                    button.text = DigitUtils.getRound(total, 2)
-                    checkTotaleButtonColor(button, column)
-                }
-
-                val lastValue = getLastAmount(editText, column - 1, row)
-                val value = getValue(editText)
-
-                when {
-                    value > lastValue -> editText.setTextColor(Color.RED)
-                    value < lastValue -> editText.setTextColor(Color.GREEN)
-                    else -> editText.setTextColor(Color.BLACK)
-                }
+                calculateTotal(editText, s, column, row)
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -316,13 +289,44 @@ class MainActivity : AppCompatActivity() {
         return editText
     }
 
+    private fun calculateTotal(editText: EditText, s: Editable?, column: Int, row: Int) {
+        var total = 0.0
+        for (i in 2 until tableRows.size) {
+            val et = tableRows[i].getChildAt(column)
+            if (et is EditText && et != editText) {
+                val value = et.text.toString()
+                if (TextUtils.isEmpty(value)) {
+                    continue
+                }
+                total += value.toDouble()
+            }
+        }
+        if (!TextUtils.isEmpty(s)) {
+            total += s.toString().toDouble()
+        }
+        val button = tableRows[1].getChildAt(column)
+        if (button is Button) {
+            button.text = DigitUtils.getRound(total, 2)
+            checkTotalButtonColor(button, column)
+        }
+
+        val lastValue = getLastAmount(editText, column - 1, row)
+        val value = getValue(editText)
+
+        when {
+            value > lastValue -> editText.setTextColor(Color.RED)
+            value < lastValue -> editText.setTextColor(Color.GREEN)
+            else -> editText.setTextColor(Color.BLACK)
+        }
+    }
+
     private fun showDifferenceValue(value: Double, lastValue: Double) {
         val sign = if (value >= lastValue) "+" else "-"
         val absolute = DigitUtils.getRound(Math.abs(value - lastValue), 2)
         toast("$sign $absolute")
     }
 
-    private fun checkTotaleButtonColor(button: Button, column: Int) {
+    private fun checkTotalButtonColor(button: Button, column: Int) {
         val lastValue = getLastTotal(button, column - 1)
         val value = getValue(button)
 
