@@ -135,11 +135,10 @@ class MainActivity : AppCompatActivity() {
                         val tvDate = tableRows[0].getChildAt(j)
                         if (tvDate is TextView) {
                             val date = Date(tvDate.text.toString())
-                            if (date.date in alDate) {
-                                continue
+                            if (date.date !in alDate) {
+                                FortuneDatabase.getDatabase(this@MainActivity).getDateDao().insert(date)
+                                alDate.add(date.date)
                             }
-                            FortuneDatabase.getDatabase(this@MainActivity).getDateDao().insert(date)
-                            alDate.add(date.date)
 
                             val etFortune = tableRows[indexRow].getChildAt(j)
                             if (etFortune is EditText) {
@@ -286,6 +285,20 @@ class MainActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             }
         })
+
+        editText.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                val text = editText.text.toString()
+                if (!TextUtils.isEmpty(text)) {
+                    val value = text.toDouble()
+                    if (value == 0.toDouble()) {
+                        editText.text = null
+                    } else {
+                        editText.setSelection(text.length)
+                    }
+                }
+            }
+        }
 
         editText.setOnLongClickListener {
             //显示比前一天增加或减少金额
@@ -448,6 +461,7 @@ class MainActivity : AppCompatActivity() {
                 for (i in tableRows.indices) {
                     tableRows[i].removeViewAt(column)
                 }
+                checkBtnAddData()
             }
         }
     }
