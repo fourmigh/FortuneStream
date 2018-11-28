@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">财富侠</string>
     <string name="add">添加</string>
-    <string name="account">账户</string>
+    <string name="account_date">账户\\日期</string>
     <string name="total">总计</string>
     <string name="save">保存</string>
     <string name="alert_delete_data">确定要删除【%s】的数据吗？</string>

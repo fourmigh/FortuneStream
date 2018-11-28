@@ -18,8 +18,8 @@
                 android:layout_height="wrap_content">
 
             <Button
-                    android:id="@+id/btnAccount"
-                    android:text="@string/account"
+                    android:id="@+id/btnAccountDate"
+                    android:text="@string/account_date"
                     android:textStyle="bold"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
