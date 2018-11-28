@@ -40,40 +40,46 @@ class MainActivity : AppCompatActivity() {
         tableRows.add(tableRow1)
 
         btnAddAccount.setOnClickListener {
-
-            linearLayout.removeView(btnAddAccount)
-            linearLayout.addView(getAccountEditText())
-            linearLayout.addView(btnAddAccount)
-
-            val tableRow = TableRow(this@MainActivity)
-            tableLayout.addView(tableRow)
-            tableRows.add(tableRow)
-
-            checkBtnAddData()
-
-            addEditText()
+            doAddAccount()
         }
 
         btnAddData.setOnClickListener {
-
-            tableRows[0].removeView(btnAddData)
-
-            val column = tableRows[0].childCount
-
-            val tvDate = getTextText()
-            tvDate.text = TimeUtils.getTime("yyyy-MM-dd")
-            tableRows[0].addView(tvDate)
-
-            tableRows[0].addView(btnAddData)
-
-            tableRows[1].addView(getBtnTotal(column))
-
-            checkBtnAddData()
-
-            addEditText()
+            doAddDate()
         }
 
         doRead()
+    }
+    
+    private fun doAddAccount() {
+        linearLayout.removeView(btnAddAccount)
+        linearLayout.addView(newAccountTextView())
+        linearLayout.addView(btnAddAccount)
+
+        val tableRow = TableRow(this@MainActivity)
+        tableLayout.addView(tableRow)
+        tableRows.add(tableRow)
+
+        checkBtnAddData()
+
+        addEditText()
+    }
+    
+    private fun doAddDate() {
+        tableRows[0].removeView(btnAddData)
+
+        val column = tableRows[0].childCount
+
+        val tvDate = newDateTextText()
+        tvDate.text = TimeUtils.getTime("yyyy-MM-dd")
+        tableRows[0].addView(tvDate)
+
+        tableRows[0].addView(btnAddData)
+
+        tableRows[1].addView(newTotalButton(column))
+
+        checkBtnAddData()
+
+        addEditText()
     }
 
 //    override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -113,9 +119,13 @@ class MainActivity : AppCompatActivity() {
             }
             for (i in 0 until row) {
                 val indexRow = i + 2
-                val etAccount = linearLayout.getChildAt(indexRow)
-                if (etAccount is EditText) {
-                    val account = Account(etAccount.text.toString())
+                val tvAccount = linearLayout.getChildAt(indexRow)
+                if (tvAccount is TextView) {
+                    val nameAccount = tvAccount.text.toString()
+                    if (TextUtils.isEmpty(nameAccount)) {
+                        continue
+                    }
+                    val account = Account(nameAccount)
                     FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().insert(account)
 
                     for (j in 0 until column) {
@@ -155,9 +165,9 @@ class MainActivity : AppCompatActivity() {
 
                     btnAddAccount.callOnClick()
 
-                    val etAccount = linearLayout.getChildAt(linearLayout.childCount - 2)
-                    if (etAccount is EditText) {
-                        etAccount.setText(accounts[i].account)
+                    val tvAccount = linearLayout.getChildAt(linearLayout.childCount - 2)
+                    if (tvAccount is TextView) {
+                        tvAccount.text = accounts[i].account
                     }
                 }
 
@@ -202,8 +212,8 @@ class MainActivity : AppCompatActivity() {
             return row
         }
         for (i in 2 until  linearLayout.childCount - 1) {
-            val etAccount = linearLayout.getChildAt(i)
-            if (etAccount is EditText && etAccount.text.toString() == account) {
+            val tvAccount = linearLayout.getChildAt(i)
+            if (tvAccount is TextView && tvAccount.text.toString() == account) {
                 hmRow[account] = i
                 return i
             }
@@ -242,12 +252,12 @@ class MainActivity : AppCompatActivity() {
             val childCount = tableRows[i].childCount
             val column = nColumn - childCount
             for (j in 0 until column) {
-                tableRows[i].addView(getAmountEditText(tableRows[i].childCount, i))
+                tableRows[i].addView(newAmountEditText(tableRows[i].childCount, i))
             }
         }
     }
 
-    private fun getAmountEditText(column: Int, row: Int): EditText {
+    private fun newAmountEditText(column: Int, row: Int): EditText {
         val editText = EditText(this)
         editText.maxLines = 1
         editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
@@ -308,20 +318,51 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getAccountEditText(): EditText {
+    private fun newAccountTextView(): TextView {
         val editText = EditText(this)
         editText.maxLines = 1
+        editText.setOnLongClickListener {
+            doDeleteRow(editText.text.toString())
+            true
+        }
         return editText
     }
 
-    private fun getTextText(): TextView {
+    private fun doDeleteRow(account: String) {
+        alert {
+            title = getString(R.string.alert_delete_data, account)
+            positiveButton(android.R.string.ok) {
+                deleteRow(account)
+            }
+            negativeButton(android.R.string.cancel) {}
+        }.show()
+    }
+
+    private fun deleteRow(account: String) {
+        doAsync {
+            val row = searchRow(account)
+            FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().delete(accounts[row - 2])
+            for (i in fortunes.indices) {
+                if (fortunes[i].account == account) {
+                    FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().delete(fortunes[i])
+                }
+            }
+            uiThread {
+                linearLayout.removeViewAt(row)
+                tableRows[row].removeAllViews()
+                tableRows.removeAt(row)
+            }
+        }
+    }
+
+    private fun newDateTextText(): TextView {
         val textView = TextView(this)
         textView.gravity = Gravity.CENTER
         textView.setPadding(4, 4, 4, 4)
         return textView
     }
 
-    private fun getBtnTotal(column: Int): Button {
+    private fun newTotalButton(column: Int): Button {
         val button = Button(this)
         //总计
         button.setOnClickListener {
@@ -332,7 +373,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun doDeleteColumn(column: Int) {
         alert {
-            title = getString(R.string.alert_delete_date, dates[column].date)
+            title = getString(R.string.alert_delete_data, dates[column].date)
             positiveButton(android.R.string.ok) {
                 deleteColumn(column)
             }

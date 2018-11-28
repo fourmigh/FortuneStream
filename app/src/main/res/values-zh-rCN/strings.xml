@@ -5,5 +5,5 @@
     <string name="account">账户</string>
     <string name="total">总计</string>
     <string name="save">保存</string>
-    <string name="alert_delete_date">确定要删除%s的数据吗？</string>
+    <string name="alert_delete_data">确定要删除【%s】的数据吗？</string>
 </resources>

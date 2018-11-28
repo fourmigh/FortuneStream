@@ -4,5 +4,5 @@
     <string name="account">Account</string>
     <string name="total">Total</string>
     <string name="save">Save</string>
-    <string name="alert_delete_date">Are you sure to DELETE the data of %s?</string>
+    <string name="alert_delete_data">Are you sure to DELETE the data of [%s]?</string>
 </resources>
