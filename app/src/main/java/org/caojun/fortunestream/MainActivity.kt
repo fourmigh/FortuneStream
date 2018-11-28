@@ -344,6 +344,27 @@ class MainActivity : AppCompatActivity() {
             doDeleteRow(editText.text.toString())
             true
         }
+        editText.setOnFocusChangeListener { v, hasFocus ->
+            if (!hasFocus) {
+                val account = editText.text.toString()
+                for (i in 2 until linearLayout.childCount) {
+                    val tvAccount = linearLayout.getChildAt(i)
+                    if (tvAccount == editText) {
+                        continue
+                    }
+                    if (tvAccount is TextView && tvAccount.text.toString() == account) {
+                        alert {
+                            messageResource = R.string.same_account
+                            positiveButton(android.R.string.ok) {
+                                editText.text = null
+                                editText.requestFocus()
+                            }
+                        }.show()
+                        return@setOnFocusChangeListener
+                    }
+                }
+            }
+        }
         return editText
     }
 

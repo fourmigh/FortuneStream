@@ -6,4 +6,5 @@
     <string name="total">總計</string>
     <string name="save">保存</string>
     <string name="alert_delete_data">確定要删除【%s】的數據嗎？</string>
+    <string name="same_account">已有同名帳戶。</string>
 </resources>

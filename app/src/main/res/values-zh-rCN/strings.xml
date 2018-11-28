@@ -6,4 +6,5 @@
     <string name="total">总计</string>
     <string name="save">保存</string>
     <string name="alert_delete_data">确定要删除【%s】的数据吗？</string>
+    <string name="same_account">已有同名账户。</string>
 </resources>
