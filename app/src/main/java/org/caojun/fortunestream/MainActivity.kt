@@ -29,8 +29,8 @@ class MainActivity : AppCompatActivity() {
 
     private var isReadData = false
     private val tableRows = arrayListOf<TableRow>()
-    private val hmRow = HashMap<String, Int>()
-    private val hmColumn = HashMap<String, Int>()
+//    private val hmRow = HashMap<String, Int>()
+//    private val hmColumn = HashMap<String, Int>()
     private val accounts = ArrayList<Account>()
     private val dates= ArrayList<Date>()
     private val fortunes = ArrayList<Fortune>()
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         addEditText()
 
         if (tableRows[0].childCount > 1) {
-            val btnLastDate = tableRows[0].getChildAt(tableRows[0].childCount - 1)
+            val btnLastDate = tableRows[0].getChildAt(1)
             if (btnLastDate is Button) {
                 btnLastDate.callOnClick()
             }
@@ -186,8 +186,8 @@ class MainActivity : AppCompatActivity() {
 
             uiThread {
                 isReadData = true
-                hmRow.clear()
-                hmColumn.clear()
+//                hmRow.clear()
+//                hmColumn.clear()
 
                 for (i in accounts.indices) {
 
@@ -230,14 +230,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun searchRow(account: String): Int {
-        val row = hmRow[account]
-        if (row != null) {
-            return row
-        }
+//        val row = hmRow[account]
+//        if (row != null) {
+//            return row
+//        }
         for (i in 2 until  linearLayout.childCount - 1) {
             val tvAccount = linearLayout.getChildAt(i)
             if (tvAccount is TextView && tvAccount.text.toString() == account) {
-                hmRow[account] = i
+//                hmRow[account] = i
                 return i
             }
         }
@@ -245,14 +245,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun searchColumn(date: String): Int {
-        val column = hmColumn[date]
-        if (column != null) {
-            return column
-        }
+//        val column = hmColumn[date]
+//        if (column != null) {
+//            return column
+//        }
         for (i in 0 until tableRows[0].childCount) {
             val btnDate = tableRows[0].getChildAt(i)
             if (btnDate is Button && btnDate.text.toString() == date) {
-                hmColumn[date] = i
+//                hmColumn[date] = i
                 return i
             }
         }
@@ -337,12 +337,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         editText.setOnKeyListener { v, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 val column = searchColumn(date)
                 if (column != -1 && row + 1 < tableRows.size) {
                     val etAmount = tableRows[row + 1].getChildAt(column)
                     if (etAmount is EditText) {
                         etAmount.requestFocus()
+                    }
+                } else {
+                    val lastEditText = getLastAmountEditText(date, row)
+                    if (lastEditText is EditText) {
+                        lastEditText.requestFocus()
                     }
                 }
                 return@setOnKeyListener true
@@ -443,11 +448,16 @@ class MainActivity : AppCompatActivity() {
             }
         })
         editText.setOnKeyListener { v, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 if (row + 1 < linearLayout.childCount - 1) {
                     val etAccount = linearLayout.getChildAt(row + 1)
                     if (etAccount is EditText) {
                         etAccount.requestFocus()
+                    }
+                } else {
+                    val etAmount = tableRows[row].getChildAt(0)
+                    if (etAmount is EditText) {
+                        etAmount.requestFocus()
                     }
                 }
                 return@setOnKeyListener true
