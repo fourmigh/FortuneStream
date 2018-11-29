@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.*
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.widget.Button
@@ -76,7 +75,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    
+
     private fun doAddAccount() {
         val tvAccount = newAccountTextView(linearLayout.childCount - 1)
         linearLayout.addView(tvAccount, linearLayout.childCount - 1)
@@ -95,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 
         checkBtnAddAccount()
     }
-    
+
     private fun doAddDate() {
 
         val date = if (isReadData) dates[tableRows[1].childCount].date else newTodayDate()
