@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.*
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun doAddAccount() {
-        val tvAccount = newAccountTextView()
+        val tvAccount = newAccountTextView(linearLayout.childCount - 1)
         linearLayout.addView(tvAccount, linearLayout.childCount - 1)
 
         val tableRow = TableRow(this)
@@ -77,21 +78,24 @@ class MainActivity : AppCompatActivity() {
     
     private fun doAddDate() {
 
-        val tvDate = newDateTextText()
-        if (isReadData) {
-            tvDate.text = dates[tableRows[1].childCount].date
-        } else {
-            tvDate.text = newTodayDate()
-        }
+        val date = if (isReadData) dates[tableRows[1].childCount].date else newTodayDate()
+        val btnDate = newDateButton(date)
         //第一行日期
-        tableRows[0].addView(tvDate, 0)
+        tableRows[0].addView(btnDate, 0)
 
         //第二行总计
-        tableRows[1].addView(newTotalButton(tvDate.text.toString()), 0)
+        tableRows[1].addView(newTotalButton(btnDate.text.toString()), 0)
 
         checkBtnAddData()
 
         addEditText()
+
+        if (tableRows[0].childCount > 1) {
+            val btnLastDate = tableRows[0].getChildAt(tableRows[0].childCount - 1)
+            if (btnLastDate is Button) {
+                btnLastDate.callOnClick()
+            }
+        }
     }
 
     private fun newTodayDate(): String {
@@ -148,9 +152,9 @@ class MainActivity : AppCompatActivity() {
                     alAccount.add(nameAccount)
 
                     for (j in column - 1 downTo 0) {
-                        val tvDate = tableRows[0].getChildAt(j)
-                        if (tvDate is TextView) {
-                            val date = Date(tvDate.text.toString())
+                        val btnDate = tableRows[0].getChildAt(j)
+                        if (btnDate is Button) {
+                            val date = Date(btnDate.text.toString())
                             if (date.date !in alDate) {
                                 FortuneDatabase.getDatabase(this@MainActivity).getDateDao().insert(date)
                                 alDate.add(date.date)
@@ -245,9 +249,9 @@ class MainActivity : AppCompatActivity() {
         if (column != null) {
             return column
         }
-        for (i in 0 until tableRows[0].childCount - 1) {
-            val tvDate = tableRows[0].getChildAt(i)
-            if (tvDate is TextView && tvDate.text.toString() == date) {
+        for (i in 0 until tableRows[0].childCount) {
+            val btnDate = tableRows[0].getChildAt(i)
+            if (btnDate is Button && btnDate.text.toString() == date) {
                 hmColumn[date] = i
                 return i
             }
@@ -277,14 +281,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addEditText() {
-        val nColumn = tableRows[0].childCount - 1//总列数
-        for (i in 2 until linearLayout.childCount - 1) {
+        val nColumn = tableRows[0].childCount//总列数
+        for (i in 2 until tableRows.size) {
             val childCount = tableRows[i].childCount
             val column = nColumn - childCount
             for (j in 0 until column) {
-                val index = tableRows[0].childCount - tableRows[i].childCount - 2//首行TableRow最后有个隐藏的Button(为了保证TextView和Button高度一致)
-                val tvDate = tableRows[0].getChildAt(index) as TextView
-                tableRows[i].addView(newAmountEditText(tvDate.text.toString(), i), 0)
+                val index = tableRows[0].childCount - tableRows[i].childCount - 1
+                val btnDate = tableRows[0].getChildAt(index) as Button
+                tableRows[i].addView(newAmountEditText(btnDate.text.toString(), i), 0)
             }
         }
     }
@@ -330,6 +334,20 @@ class MainActivity : AppCompatActivity() {
             val value = getValue(editText)
             showDifferenceValue(value, lastValue)
             true
+        }
+
+        editText.setOnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                val column = searchColumn(date)
+                if (column != -1 && row + 1 < tableRows.size) {
+                    val etAmount = tableRows[row + 1].getChildAt(column)
+                    if (etAmount is EditText) {
+                        etAmount.requestFocus()
+                    }
+                }
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
         }
         return editText
     }
@@ -385,7 +403,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun newAccountTextView(): TextView {
+    private fun newAccountTextView(row: Int): TextView {
         val editText = EditText(this)
         editText.maxLines = 1
         editText.setOnLongClickListener {
@@ -424,6 +442,18 @@ class MainActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             }
         })
+        editText.setOnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                if (row + 1 < linearLayout.childCount - 1) {
+                    val etAccount = linearLayout.getChildAt(row + 1)
+                    if (etAccount is EditText) {
+                        etAccount.requestFocus()
+                    }
+                }
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
         return editText
     }
 
@@ -454,11 +484,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun newDateTextText(): TextView {
-        val textView = TextView(this)
-        textView.gravity = Gravity.CENTER
-        textView.setPadding(4, 4, 4, 4)
-        return textView
+    private fun newDateButton(date: String): Button {
+        val button = Button(this)
+        button.text = date
+        button.setOnClickListener {
+            val column = searchColumn(date)
+            if (column != -1) {
+                var isEnabled: Boolean? = null
+                for (i in 2 until tableRows.size) {
+                    val etAmount = tableRows[i].getChildAt(column)
+                    if (etAmount is EditText) {
+                        if (isEnabled == null) {
+                            isEnabled = !etAmount.isEnabled
+                        }
+                        etAmount.isEnabled = isEnabled
+                    }
+                }
+            }
+        }
+        return button
     }
 
     private fun newTotalButton(date: String): Button {
