@@ -133,7 +133,7 @@ class MainActivity : AppCompatActivity() {
             if (row < 1) {
                 return@doAsync
             }
-            val column = tableRows[0].childCount - 1
+            val column = tableRows[0].childCount
             if (column < 1) {
                 return@doAsync
             }
