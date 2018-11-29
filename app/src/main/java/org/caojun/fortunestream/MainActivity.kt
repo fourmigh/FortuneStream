@@ -337,17 +337,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         editText.setOnKeyListener { v, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                val column = searchColumn(date)
-                if (column != -1 && row + 1 < tableRows.size) {
-                    val etAmount = tableRows[row + 1].getChildAt(column)
-                    if (etAmount is EditText) {
-                        etAmount.requestFocus()
-                    }
-                } else {
-                    val lastEditText = getLastAmountEditText(date, row)
-                    if (lastEditText is EditText) {
-                        lastEditText.requestFocus()
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                if (event.action == KeyEvent.ACTION_UP) {
+                    val column = searchColumn(date)
+                    if (column != -1 && row + 1 < tableRows.size) {
+                        val etAmount = tableRows[row + 1].getChildAt(column)
+                        if (etAmount is EditText) {
+                            etAmount.requestFocus()
+                        }
+                    } else {
+                        val lastEditText = getLastAmountEditText(date, row)
+                        if (lastEditText is EditText) {
+                            lastEditText.requestFocus()
+                        }
                     }
                 }
                 return@setOnKeyListener true
@@ -416,7 +418,10 @@ class MainActivity : AppCompatActivity() {
             true
         }
         editText.setOnFocusChangeListener { v, hasFocus ->
-            if (!hasFocus) {
+            if (hasFocus) {
+                val text = editText.text.toString()
+                editText.setSelection(text.length)
+            } else {
                 val account = editText.text.toString()
                 for (i in 2 until linearLayout.childCount) {
                     val tvAccount = linearLayout.getChildAt(i)
@@ -448,16 +453,18 @@ class MainActivity : AppCompatActivity() {
             }
         })
         editText.setOnKeyListener { v, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
-                if (row + 1 < linearLayout.childCount - 1) {
-                    val etAccount = linearLayout.getChildAt(row + 1)
-                    if (etAccount is EditText) {
-                        etAccount.requestFocus()
-                    }
-                } else {
-                    val etAmount = tableRows[row].getChildAt(0)
-                    if (etAmount is EditText) {
-                        etAmount.requestFocus()
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                if (event.action == KeyEvent.ACTION_UP) {
+                    if (row + 1 < linearLayout.childCount - 1) {
+                        val etAccount = linearLayout.getChildAt(row + 1)
+                        if (etAccount is EditText) {
+                            etAccount.requestFocus()
+                        }
+                    } else {
+                        val etAmount = tableRows[row].getChildAt(0)
+                        if (etAmount is EditText) {
+                            etAmount.requestFocus()
+                        }
                     }
                 }
                 return@setOnKeyListener true
