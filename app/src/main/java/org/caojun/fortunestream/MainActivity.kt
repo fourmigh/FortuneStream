@@ -65,6 +65,16 @@ class MainActivity : AppCompatActivity() {
         } else {
             checkBtnAddAccount()
         }
+        var isEnabled: Boolean? = null
+        for (i in 2 until linearLayout.childCount - 1) {
+            val etAccount = linearLayout.getChildAt(i)
+            if (etAccount is EditText) {
+                if (isEnabled == null) {
+                    isEnabled = !etAccount.isEnabled
+                }
+                etAccount.isEnabled = isEnabled
+            }
+        }
     }
     
     private fun doAddAccount() {
@@ -233,6 +243,8 @@ class MainActivity : AppCompatActivity() {
                 isReadData = false
 
                 checkBtnAddData()
+
+                doBtnTotal()
             }
         }
     }
