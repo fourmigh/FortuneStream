@@ -26,6 +26,11 @@ import org.jetbrains.anko.uiThread
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val Row_Date = 0
+        const val Row_Total = 1
+    }
+
     private var isReadData = false
     private val tableRows = arrayListOf<TableRow>()
     private val accounts = ArrayList<Account>()
@@ -97,20 +102,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun doAddDate() {
 
-        val date = if (isReadData) dates[tableRows[1].childCount].date else newTodayDate()
+        val date = if (isReadData) dates[tableRows[Row_Total].childCount].date else newTodayDate()
         val btnDate = newDateButton(date)
         //第一行日期
-        tableRows[0].addView(btnDate, 0)
+        tableRows[Row_Date].addView(btnDate, 0)
 
         //第二行总计
-        tableRows[1].addView(newTotalButton(btnDate.text.toString()), 0)
+        tableRows[Row_Total].addView(newTotalButton(btnDate.text.toString()), 0)
 
         checkBtnAddData()
 
         addEditText()
 
-        if (tableRows[0].childCount > 1) {
-            val btnLastDate = tableRows[0].getChildAt(1)
+        if (tableRows[Row_Date].childCount > 1) {
+            val btnLastDate = tableRows[Row_Date].getChildAt(1)
             if (btnLastDate is Button) {
                 btnLastDate.callOnClick()
             }
@@ -152,7 +157,7 @@ class MainActivity : AppCompatActivity() {
             if (row < 1) {
                 return@doAsync
             }
-            val column = tableRows[0].childCount
+            val column = tableRows[Row_Date].childCount
             if (column < 1) {
                 return@doAsync
             }
@@ -171,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                     alAccount.add(nameAccount)
 
                     for (j in column - 1 downTo 0) {
-                        val btnDate = tableRows[0].getChildAt(j)
+                        val btnDate = tableRows[Row_Date].getChildAt(j)
                         if (btnDate is Button) {
                             val date = Date(btnDate.text.toString())
                             if (date.date !in alDate) {
@@ -259,8 +264,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun searchColumn(date: String): Int {
-        for (i in 0 until tableRows[0].childCount) {
-            val btnDate = tableRows[0].getChildAt(i)
+        for (i in 0 until tableRows[Row_Date].childCount) {
+            val btnDate = tableRows[Row_Date].getChildAt(i)
             if (btnDate is Button && btnDate.text.toString() == date) {
                 return i
             }
@@ -284,19 +289,19 @@ class MainActivity : AppCompatActivity() {
             btnAddData.isEnabled = true
             return
         }
-        val textView = tableRows[0].getChildAt(0)
+        val textView = tableRows[Row_Date].getChildAt(0)
         val today = newTodayDate()
         btnAddData.isEnabled = !(textView is TextView && textView.text.toString() == today)
     }
 
     private fun addEditText() {
-        val nColumn = tableRows[0].childCount//总列数
+        val nColumn = tableRows[Row_Date].childCount//总列数
         for (i in 2 until tableRows.size) {
             val childCount = tableRows[i].childCount
             val column = nColumn - childCount
             for (j in 0 until column) {
-                val index = tableRows[0].childCount - tableRows[i].childCount - 1
-                val btnDate = tableRows[0].getChildAt(index) as Button
+                val index = tableRows[Row_Date].childCount - tableRows[i].childCount - 1
+                val btnDate = tableRows[Row_Date].getChildAt(index) as Button
                 tableRows[i].addView(newAmountEditText(btnDate.text.toString(), i), 0)
             }
         }
@@ -386,7 +391,7 @@ class MainActivity : AppCompatActivity() {
         if (!TextUtils.isEmpty(s)) {
             total += s.toString().toDouble()
         }
-        val button = tableRows[1].getChildAt(column)
+        val button = tableRows[Row_Total].getChildAt(column)
         if (button is Button) {
             button.text = DigitUtils.getRound(total, 2)
             checkTotalButtonColor(button, date)
@@ -587,8 +592,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun getLastTotal(dateToday: String): TextView? {
         val column = searchColumn(dateToday)
-        if (column != -1 && column < tableRows[1].childCount - 1) {
-            val tvTotal = tableRows[1].getChildAt(column + 1)
+        if (column != -1 && column < tableRows[Row_Total].childCount - 1) {
+            val tvTotal = tableRows[Row_Total].getChildAt(column + 1)
             if (tvTotal is TextView) {
                 return tvTotal
             }
@@ -604,7 +609,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getLastAmountEditText(dateToday: String, row: Int): EditText? {
         val column = searchColumn(dateToday)
-        if (column != -1 && column < tableRows[1].childCount - 1) {
+        if (column != -1 && column < tableRows[Row_Total].childCount - 1) {
             val etAmount = tableRows[row].getChildAt(column + 1)
             if (etAmount is EditText) {
                 return etAmount
