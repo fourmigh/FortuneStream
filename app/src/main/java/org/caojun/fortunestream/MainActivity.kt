@@ -305,7 +305,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun newAmountEditText(date: String, row: Int): EditText {
         val editText = EditText(this)
-        editText.maxLines = 1
+        editText.setSingleLine()
         editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
         val filters = arrayOf<InputFilter>(CashierInputFilter())
         editText.filters = filters
@@ -422,7 +422,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun newAccountTextView(row: Int): TextView {
         val editText = EditText(this)
-        editText.maxLines = 1
+        editText.setSingleLine()
         editText.setOnLongClickListener {
             doDeleteRow(editText.text.toString())
             true
