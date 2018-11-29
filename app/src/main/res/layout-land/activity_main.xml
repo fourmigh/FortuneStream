@@ -18,8 +18,8 @@
                 android:layout_height="wrap_content">
 
             <Button
-                    android:id="@+id/btnAccountDate"
-                    android:text="@string/account_date"
+                    android:id="@+id/btnAddData"
+                    android:text="@string/add_date"
                     android:textStyle="bold"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
@@ -33,7 +33,7 @@
 
             <Button
                     android:id="@+id/btnAddAccount"
-                    android:text="@string/add"
+                    android:text="@string/add_account"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -52,11 +52,10 @@
 
 
                     <Button
-                            android:id="@+id/btnAddData"
-                            android:enabled="false"
-                            android:text="@string/add"
+                            android:text="Button"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:visibility="invisible"/>
                 </TableRow>
 
                 <TableRow

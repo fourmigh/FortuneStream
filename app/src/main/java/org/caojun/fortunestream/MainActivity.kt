@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         val tvAccount = newAccountTextView()
         linearLayout.addView(tvAccount, linearLayout.childCount - 1)
 
-        val tableRow = TableRow(this@MainActivity)
+        val tableRow = TableRow(this)
         tableLayout.addView(tableRow)
         tableRows.add(tableRow)
 
@@ -76,17 +76,26 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun doAddDate() {
-        val column = tableRows[0].childCount - 1
 
         val tvDate = newDateTextText()
-        tvDate.text = TimeUtils.getTime("yyyy-MM-dd")
-        tableRows[0].addView(tvDate, column)
+        if (isReadData) {
+            tvDate.text = dates[tableRows[1].childCount].date
+        } else {
+            tvDate.text = newTodayDate()
+        }
+        //第一行日期
+        tableRows[0].addView(tvDate, 0)
 
-        tableRows[1].addView(newTotalButton(column))
+        //第二行总计
+        tableRows[1].addView(newTotalButton(tvDate.text.toString()), 0)
 
         checkBtnAddData()
 
         addEditText()
+    }
+
+    private fun newTodayDate(): String {
+        return TimeUtils.getTime("yyyy-MM-dd")
     }
 
 //    override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -138,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                     FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().insert(account)
                     alAccount.add(nameAccount)
 
-                    for (j in 0 until column) {
+                    for (j in column - 1 downTo 0) {
                         val tvDate = tableRows[0].getChildAt(j)
                         if (tvDate is TextView) {
                             val date = Date(tvDate.text.toString())
@@ -188,11 +197,6 @@ class MainActivity : AppCompatActivity() {
 
                 for (i in dates.indices) {
                     btnAddData.callOnClick()
-
-                    val tvDate = tableRows[0].getChildAt(tableRows[0].childCount - 2)
-                    if (tvDate is TextView) {
-                        tvDate.text = dates[i].date
-                    }
                 }
 
                 for (i in fortunes.indices) {
@@ -267,8 +271,8 @@ class MainActivity : AppCompatActivity() {
             btnAddData.isEnabled = true
             return
         }
-        val textView = tableRows[0].getChildAt(tableRows[0].childCount - 2)
-        val today = TimeUtils.getTime("yyyy-MM-dd")
+        val textView = tableRows[0].getChildAt(0)
+        val today = newTodayDate()
         btnAddData.isEnabled = !(textView is TextView && textView.text.toString() == today)
     }
 
@@ -278,12 +282,14 @@ class MainActivity : AppCompatActivity() {
             val childCount = tableRows[i].childCount
             val column = nColumn - childCount
             for (j in 0 until column) {
-                tableRows[i].addView(newAmountEditText(tableRows[i].childCount, i))
+                val index = tableRows[0].childCount - tableRows[i].childCount - 2//首行TableRow最后有个隐藏的Button(为了保证TextView和Button高度一致)
+                val tvDate = tableRows[0].getChildAt(index) as TextView
+                tableRows[i].addView(newAmountEditText(tvDate.text.toString(), i), 0)
             }
         }
     }
 
-    private fun newAmountEditText(column: Int, row: Int): EditText {
+    private fun newAmountEditText(date: String, row: Int): EditText {
         val editText = EditText(this)
         editText.maxLines = 1
         editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
@@ -294,7 +300,7 @@ class MainActivity : AppCompatActivity() {
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 //实时计算总计
-                calculateTotal(editText, s, column, row)
+                calculateTotal(editText, s, date, row)
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -320,7 +326,7 @@ class MainActivity : AppCompatActivity() {
 
         editText.setOnLongClickListener {
             //显示比前一天增加或减少金额
-            val lastValue = getLastAmount(editText, column - 1, row)
+            val lastValue = getLastAmount(editText, date, row)
             val value = getValue(editText)
             showDifferenceValue(value, lastValue)
             true
@@ -328,16 +334,19 @@ class MainActivity : AppCompatActivity() {
         return editText
     }
 
-    private fun calculateTotal(editText: EditText, s: Editable?, column: Int, row: Int) {
+    private fun calculateTotal(editText: EditText, s: Editable?, date: String, row: Int) {
         var total = 0.0
-        for (i in 2 until tableRows.size) {
-            val et = tableRows[i].getChildAt(column)
-            if (et is EditText && et != editText) {
-                val value = et.text.toString()
-                if (TextUtils.isEmpty(value)) {
-                    continue
+        val column = searchColumn(date)
+        if (column >= 0) {
+            for (i in 2 until tableRows.size) {
+                val et = tableRows[i].getChildAt(column)
+                if (et is EditText && et != editText) {
+                    val value = et.text.toString()
+                    if (TextUtils.isEmpty(value)) {
+                        continue
+                    }
+                    total += value.toDouble()
                 }
-                total += value.toDouble()
             }
         }
         if (!TextUtils.isEmpty(s)) {
@@ -346,10 +355,10 @@ class MainActivity : AppCompatActivity() {
         val button = tableRows[1].getChildAt(column)
         if (button is Button) {
             button.text = DigitUtils.getRound(total, 2)
-            checkTotalButtonColor(button, column)
+            checkTotalButtonColor(button, date)
         }
 
-        val lastValue = getLastAmount(editText, column - 1, row)
+        val lastValue = getLastAmount(editText, date, row)
         val value = getValue(editText)
 
         when {
@@ -365,8 +374,8 @@ class MainActivity : AppCompatActivity() {
         toast("$sign $absolute")
     }
 
-    private fun checkTotalButtonColor(button: Button, column: Int) {
-        val lastValue = getLastTotal(button, column - 1)
+    private fun checkTotalButtonColor(button: Button, dateToday: String) {
+        val lastValue = getLastTotal(button, dateToday)
         val value = getValue(button)
 
         when {
@@ -452,36 +461,43 @@ class MainActivity : AppCompatActivity() {
         return textView
     }
 
-    private fun newTotalButton(column: Int): Button {
+    private fun newTotalButton(date: String): Button {
         val button = Button(this)
         button.setOnLongClickListener {
-            doDeleteColumn(column)
+            doDeleteColumn(date)
             true
         }
         button.setOnClickListener {
             //显示比前一天增加或减少金额
-            val lastValue = getLastTotal(button, column - 1)
+            val lastValue = getLastTotal(button, date)
             val value = getValue(button)
             showDifferenceValue(value, lastValue)
         }
         return button
     }
 
-    private fun doDeleteColumn(column: Int) {
+    private fun doDeleteColumn(date: String) {
         alert {
-            title = getString(R.string.alert_delete_data, dates[column].date)
+            title = getString(R.string.alert_delete_data, date)
             positiveButton(android.R.string.ok) {
-                deleteColumn(column)
+                deleteColumn(date)
             }
             negativeButton(android.R.string.cancel) {}
         }.show()
     }
 
-    private fun deleteColumn(column: Int) {
+    private fun deleteColumn(date: String) {
         doAsync {
-            FortuneDatabase.getDatabase(this@MainActivity).getDateDao().delete(dates[column])
+            var column = 0
+            for (i in dates.indices) {
+                if (dates[i].date == date) {
+                    FortuneDatabase.getDatabase(this@MainActivity).getDateDao().delete(dates[i])
+                    column = i
+                    break
+                }
+            }
             for (i in fortunes.indices) {
-                if (fortunes[i].date == dates[column].date) {
+                if (fortunes[i].date == date) {
                     FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().delete(fortunes[i])
                 }
             }
@@ -494,37 +510,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getLastBtnTotal(column: Int): Button? {
-        if (column < 0) {
-            return null
-        }
-        val button = tableRows[1].getChildAt(column)
-        if (button is Button) {
-            return button
+    private fun getLastTotal(dateToday: String): TextView? {
+        val column = searchColumn(dateToday)
+        if (column != -1 && column < tableRows[1].childCount - 1) {
+            val tvTotal = tableRows[1].getChildAt(column + 1)
+            if (tvTotal is TextView) {
+                return tvTotal
+            }
         }
         return null
     }
 
-    private fun getLastTotal(button: Button, column: Int): Double {
+    private fun getLastTotal(button: Button, dateToday: String): Double {
         val value = getValue(button)
-        val lastEditText = getLastBtnTotal(column)
-        return if (lastEditText == null) value else getValue(lastEditText)
+        val lastTextView = getLastTotal(dateToday)
+        return if (lastTextView == null) value else getValue(lastTextView)
     }
 
-    private fun getLastAmountEditText(column: Int, row: Int): EditText? {
-        if (column < 0) {
-            return null
-        }
-        val editText = tableRows[row].getChildAt(column)
-        if (editText is EditText) {
-            return editText
+    private fun getLastAmountEditText(dateToday: String, row: Int): EditText? {
+        val column = searchColumn(dateToday)
+        if (column != -1 && column < tableRows[1].childCount - 1) {
+            val etAmount = tableRows[row].getChildAt(column + 1)
+            if (etAmount is EditText) {
+                return etAmount
+            }
         }
         return null
     }
 
-    private fun getLastAmount(editText: EditText, column: Int, row: Int): Double {
+    private fun getLastAmount(editText: EditText, dateToday: String, row: Int): Double {
         val value = getValue(editText)
-        val lastEditText = getLastAmountEditText(column, row)
+        val lastEditText = getLastAmountEditText(dateToday, row)
         return if (lastEditText == null) value else getValue(lastEditText)
     }
 
