@@ -29,8 +29,6 @@ class MainActivity : AppCompatActivity() {
 
     private var isReadData = false
     private val tableRows = arrayListOf<TableRow>()
-//    private val hmRow = HashMap<String, Int>()
-//    private val hmColumn = HashMap<String, Int>()
     private val accounts = ArrayList<Account>()
     private val dates= ArrayList<Date>()
     private val fortunes = ArrayList<Fortune>()
@@ -54,7 +52,19 @@ class MainActivity : AppCompatActivity() {
             doAddDate()
         }
 
+        btnTotal.setOnClickListener {
+            doBtnTotal()
+        }
+
         doRead()
+    }
+
+    private fun doBtnTotal() {
+        if (btnAddAccount.isEnabled) {
+            btnAddAccount.isEnabled = false
+        } else {
+            checkBtnAddAccount()
+        }
     }
     
     private fun doAddAccount() {
@@ -186,8 +196,6 @@ class MainActivity : AppCompatActivity() {
 
             uiThread {
                 isReadData = true
-//                hmRow.clear()
-//                hmColumn.clear()
 
                 for (i in accounts.indices) {
 
@@ -230,14 +238,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun searchRow(account: String): Int {
-//        val row = hmRow[account]
-//        if (row != null) {
-//            return row
-//        }
         for (i in 2 until  linearLayout.childCount - 1) {
             val tvAccount = linearLayout.getChildAt(i)
             if (tvAccount is TextView && tvAccount.text.toString() == account) {
-//                hmRow[account] = i
                 return i
             }
         }
@@ -245,14 +248,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun searchColumn(date: String): Int {
-//        val column = hmColumn[date]
-//        if (column != null) {
-//            return column
-//        }
         for (i in 0 until tableRows[0].childCount) {
             val btnDate = tableRows[0].getChildAt(i)
             if (btnDate is Button && btnDate.text.toString() == date) {
-//                hmColumn[date] = i
                 return i
             }
         }
@@ -486,13 +484,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun deleteRow(account: String) {
         doAsync {
-            val row = searchRow(account)
-            FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().delete(accounts[row - 2])
+            for (i in accounts.indices) {
+                if (accounts[i].account == account) {
+                    FortuneDatabase.getDatabase(this@MainActivity).getAccountDao().delete(accounts[i])
+                    break
+                }
+            }
             for (i in fortunes.indices) {
                 if (fortunes[i].account == account) {
                     FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().delete(fortunes[i])
                 }
             }
+            val row = searchRow(account)
             uiThread {
                 linearLayout.removeViewAt(row)
                 tableRows[row].removeAllViews()
