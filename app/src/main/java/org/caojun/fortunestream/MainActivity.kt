@@ -603,15 +603,8 @@ class MainActivity : AppCompatActivity() {
             else -> editText.setTextColor(Color.BLACK)
         }
 
-        doAsync {
-            val account = getAccount(row)
-            val fortune = FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().query(account, date)
-            if (fortune == null) {
-                updateSaveMenu(true)
-                return@doAsync
-            }
-            updateSaveMenu(value != fortune.fortune)
-        }
+        val account = getAccount(row)
+        checkSaveMenu(value, account, date)
     }
 
     private fun getAccount(row: Int): String {
@@ -626,7 +619,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkSaveMenu(value: Double, account: String, date: String) {
+        doAsync {
 
+            val fortune = FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().query(account, date)
+            if (fortune == null) {
+                updateSaveMenu(true)
+                return@doAsync
+            }
+            updateSaveMenu(value != fortune.fortune)
+        }
     }
 
     private fun showDifferenceValue(value: Double, lastValue: Double) {
