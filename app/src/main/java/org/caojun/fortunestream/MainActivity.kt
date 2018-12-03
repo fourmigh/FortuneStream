@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private val fortunes = ArrayList<Fortune>()
     private var widthStandard = 0
     private var heightStandard = 0
+    private var isSaveMenuEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,9 +76,18 @@ class MainActivity : AppCompatActivity() {
         doRead()
     }
 
+    private fun updateSaveMenu(isEnabled: Boolean) {
+        isSaveMenuEnabled = isEnabled
+        invalidateOptionsMenu()
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+//        menuInflater.inflate(R.menu.menu_main, menu)
+
+        val saveMenu = menu.add(0, R.id.action_save, 0, R.string.save)
+        saveMenu.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+        saveMenu.isEnabled = isSaveMenuEnabled
         return true
     }
 
@@ -138,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            updateSaveMenu(false)
         }
     }
 
@@ -591,6 +602,31 @@ class MainActivity : AppCompatActivity() {
             value < lastValue -> editText.setTextColor(Color.GREEN)
             else -> editText.setTextColor(Color.BLACK)
         }
+
+        doAsync {
+            val account = getAccount(row)
+            val fortune = FortuneDatabase.getDatabase(this@MainActivity).getFortuneDao().query(account, date)
+            if (fortune == null) {
+                updateSaveMenu(true)
+                return@doAsync
+            }
+            updateSaveMenu(value != fortune.fortune)
+        }
+    }
+
+    private fun getAccount(row: Int): String {
+        if (row < 0 || row >= llAccount.childCount) {
+            return ""
+        }
+        val tvAccount = llAccount.getChildAt(row)
+        if (tvAccount is TextView) {
+            return tvAccount.text.toString()
+        }
+        return ""
+    }
+
+    private fun checkSaveMenu(value: Double, account: String, date: String) {
+
     }
 
     private fun showDifferenceValue(value: Double, lastValue: Double) {
