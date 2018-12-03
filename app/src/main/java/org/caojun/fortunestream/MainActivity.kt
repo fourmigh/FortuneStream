@@ -301,6 +301,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 llDate.removeViewAt(column)
                 llTotal.removeViewAt(column)
+                trStandard.removeViewAt(column)
                 checkBtnAddData()
             }
         }
