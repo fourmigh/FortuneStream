@@ -372,6 +372,11 @@ class MainActivity : AppCompatActivity() {
                 btnLastDate.callOnClick()
             }
         }
+
+        if (!isReadData) {
+            val etFirst = tableRows[0].getChildAt(0)
+            etFirst.requestFocus()
+        }
     }
 
     private fun setView(view: View, vStandard: View) {
